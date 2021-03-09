@@ -64,7 +64,7 @@
 
 -include_lib("kernel/include/inet.hrl").
 
--define(GSSAPI_DRV, "gssapi_drv").
+-define(GSSAPI_DRV, "egssapi").
 -define(SERVER, ?MODULE).
 -define(APP, egssapi).
 
@@ -153,11 +153,11 @@ accept_sec_context(Context, Data) when is_binary(Data) ->
 
     case Result of
 	{ok, {Idx2, User, Ccname, Resp}} ->
-	    {ok, {set_index(Context, Idx2), User, Ccname, Resp}};
+		{ok, {set_index(Context, Idx2), User, Ccname, Resp}};
 	{needsmore, {Idx2, Resp}} ->
-	    {needsmore, {set_index(Context, Idx2), Resp}};
+		{needsmore, {set_index(Context, Idx2), Resp}};
 	{error, Reason} ->
-	    {error, Reason}
+		{error, Reason}
     end.
 
 %%--------------------------------------------------------------------
@@ -180,9 +180,9 @@ init_sec_context(Context, Service, Hostname, Data) when is_list(Service),
     Idx = lookup_index(Context),
     case call_port(Context, {init_sec_context, {Idx, Service, Hostname, Data}}) of
 	{Status, {Idx2, Resp}} ->
-	    {Status, {set_index(Context, Idx2), Resp}};
+		{Status, {set_index(Context, Idx2), Resp}};
 	{error, Reason} ->
-	    {error, Reason}
+		{error, Reason}
     end.
 
 %%--------------------------------------------------------------------
@@ -300,7 +300,7 @@ handle_cast(_Msg, State) ->
 handle_info({Port, {data, Data}}, State = #state{port=Port}) ->
     Term = binary_to_term(Data),
     [From | Rest] = State#state.waiting,
-    %% 		io:format("Result ~p~n", [Term]),
+    %%		io:format("Result ~p~n", [Term]),
     gen_server:reply(From, Term),
     {noreply, State#state{waiting=Rest}};
 
@@ -410,7 +410,7 @@ gethostname() ->
     {ok, Name} = inet:gethostname(),
     case inet:gethostbyname(Name) of
 	{ok, Hostent} when is_record(Hostent, hostent) ->
-	    Hostent#hostent.h_name;
+		Hostent#hostent.h_name;
 	_ ->
-	    Name
+		Name
     end.
