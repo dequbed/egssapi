@@ -261,7 +261,7 @@ init_user(gss_ctx_id_t *ctx,
 
     maj_stat = gss_import_name (&min_stat,
                                 &name_token,
-                                GSS_C_NT_HOSTBASED_SERVICE,
+                                GSS_KRB5_NT_PRINCIPAL_NAME,
                                 &server);
 
     if (GSS_ERROR(maj_stat))
