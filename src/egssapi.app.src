@@ -1,6 +1,6 @@
 {application, egssapi,
  [{description, "GSSAPI"},
-  {vsn,"@egssapi_VSN@"},
+  {vsn,"0.1.0"},
   {modules, [
 	     'SPNEGOASNOneSpec',
 	     egssapi,
