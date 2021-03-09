@@ -14,3 +14,7 @@ SPNEGOASNOneSpec.hrl
 *.app
 *.beam
 *.o
+.rebar/
+_build/
+priv/
+
