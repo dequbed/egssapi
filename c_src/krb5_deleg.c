@@ -83,7 +83,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef KRB5
 #include <krb5.h>
 #ifdef HEIMDAL
 #  include <gssapi.h>
@@ -95,7 +94,6 @@
 #  define GSS_C_NT_HOSTBASED_SERVICE gss_nt_service_name
 #  define GSS_KRB5_NT_PRINCIPAL_NAME gss_nt_krb5_name
 #  define krb5_get_err_text(context,code) error_message(code)
-#endif
 #endif
 
 #include "krb5_deleg.h"

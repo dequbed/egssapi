@@ -78,10 +78,8 @@
 #include <stdlib.h>
 
 
-#ifdef HAVE_KRB5
 #include <gssapi/gssapi_krb5.h>
 #include <krb5.h>
-#endif
 
 #include "krb5_deleg.h"
 #include "port_util.h"
@@ -90,34 +88,34 @@
 #define MAX_SESSIONS 128
 
 
-#define ENCODE_ERROR(err)				\
-    {							\
-	if (ei_x_encode_atom(&result, "error") ||	\
-	    ei_x_encode_atom(&result, err))		\
-	    return 17;					\
-	write_cmd(&result);				\
-	ei_x_free(&result);				\
-	goto error;					\
+#define ENCODE_ERROR(err)                                \
+    {                                                        \
+        if (ei_x_encode_atom(&result, "error") ||        \
+            ei_x_encode_atom(&result, err))                \
+            return 17;                                        \
+        write_cmd(&result);                                \
+        ei_x_free(&result);                                \
+        goto error;                                        \
     }
 
-#define ENCODE_ERROR_NO(err, no)			\
-    {							\
-	if (ei_x_encode_atom(&result, "error") ||	\
-	    ei_x_encode_tuple_header(&result, 2) ||	\
-	    ei_x_encode_atom(&result, err) ||		\
-	    ei_x_encode_long(&result, no))		\
-	    return 18;					\
-	write_cmd(&result);				\
-	ei_x_free(&result);				\
-	goto error;					\
+#define ENCODE_ERROR_NO(err, no)                        \
+    {                                                        \
+        if (ei_x_encode_atom(&result, "error") ||        \
+            ei_x_encode_tuple_header(&result, 2) ||        \
+            ei_x_encode_atom(&result, err) ||                \
+            ei_x_encode_long(&result, no))                \
+            return 18;                                        \
+        write_cmd(&result);                                \
+        ei_x_free(&result);                                \
+        goto error;                                        \
     }
 
 #define EI(err) \
 { \
     if (err) { \
-	fprintf(stderr, "marshalling error at file:%s line:%d\r\n", \
-		__FILE__, __LINE__); \
-	return 1; \
+        fprintf(stderr, "marshalling error at file:%s line:%d\r\n", \
+                __FILE__, __LINE__); \
+        return 1; \
     } \
 }
 
@@ -149,9 +147,9 @@ int session_find_free()
 {
     int i;
     for (i = 0; i < MAX_SESSIONS; i++) {
-	if (!g_sessions[i]) {
-	    return i;
-	}
+        if (!g_sessions[i]) {
+            return i;
+        }
     }
 
     return -1;
@@ -173,21 +171,21 @@ find_mech(gss_OID oid)
     int i;
 
     for (i = 0; mechs[i].oid != NULL; i++) {
-	if (oid->length != mechs[i].oid_len)
-	    continue;
-	if (memcmp(oid->elements, mechs[i].oid, mechs[i].oid_len) != 0)
-	    continue;
-	return &mechs[i];
+        if (oid->length != mechs[i].oid_len)
+            continue;
+        if (memcmp(oid->elements, mechs[i].oid, mechs[i].oid_len) != 0)
+            continue;
+        return &mechs[i];
     }
     return NULL;
 }
 
 static int 
 accept_user(gss_ctx_id_t *ctx,
-	    gss_buffer_desc *in,
-	    gss_buffer_desc *out,
-	    gss_buffer_desc *name,
-	    char **pccname)
+            gss_buffer_desc *in,
+            gss_buffer_desc *out,
+            gss_buffer_desc *name,
+            char **pccname)
 {
     OM_uint32 maj_stat, min_stat;
     gss_name_t src_name = GSS_C_NO_NAME;
@@ -197,59 +195,59 @@ accept_user(gss_ctx_id_t *ctx,
 
     *pccname = NULL;
     maj_stat = gss_accept_sec_context(&min_stat,
-				      ctx,
-				      GSS_C_NO_CREDENTIAL,
-				      in,
-				      GSS_C_NO_CHANNEL_BINDINGS,
-				      &src_name,
-				      &oid,
-				      out,
-				      NULL,
-				      NULL,
-				      &delegated_cred_handle);
+                                      ctx,
+                                      GSS_C_NO_CREDENTIAL,
+                                      in,
+                                      GSS_C_NO_CHANNEL_BINDINGS,
+                                      &src_name,
+                                      &oid,
+                                      out,
+                                      NULL,
+                                      NULL,
+                                      &delegated_cred_handle);
 
     if ((maj_stat & GSS_S_CONTINUE_NEEDED) || maj_stat != GSS_S_COMPLETE) {
-	fprintf(stderr, "gss_accept_sec_context: %08x %d %d ",
-		maj_stat, maj_stat & GSS_S_CONTINUE_NEEDED, maj_stat != GSS_S_COMPLETE);
-	gss_print_errors(min_stat);
-	ret = HTTP_UNAUTHORIZED;
-	goto out;
+        fprintf(stderr, "gss_accept_sec_context: %08x %d %d ",
+                maj_stat, maj_stat & GSS_S_CONTINUE_NEEDED, maj_stat != GSS_S_COMPLETE);
+        gss_print_errors(min_stat);
+        ret = HTTP_UNAUTHORIZED;
+        goto out;
     }
-				      
+
     if (name) {
-	/* Use display name */
-	maj_stat = gss_display_name(&min_stat, src_name, name, NULL);
-	if (maj_stat != GSS_S_COMPLETE) {
-	    ret = HTTP_UNAUTHORIZED;
-	    goto out;
-	}
+        /* Use display name */
+        maj_stat = gss_display_name(&min_stat, src_name, name, NULL);
+        if (maj_stat != GSS_S_COMPLETE) {
+            ret = HTTP_UNAUTHORIZED;
+            goto out;
+        }
     }
 
     ret = OK;
 
     if (delegated_cred_handle) {
-	const struct mech_specific *m;
+        const struct mech_specific *m;
 
-	m = find_mech(oid);
-	if (m && m->save_cred)
-	    (*m->save_cred)(name->value, delegated_cred_handle, pccname);
+        m = find_mech(oid);
+        if (m && m->save_cred)
+            (*m->save_cred)(name->value, delegated_cred_handle, pccname);
     } else {
-/* 	fprintf(stderr, "Not delegated\r\n"); */
+/*         fprintf(stderr, "Not delegated\r\n"); */
     }
 
  out:
     if (src_name != GSS_C_NO_NAME)
-	gss_release_name(&min_stat, &src_name);
+        gss_release_name(&min_stat, &src_name);
 
     return ret;
 }
 
 static int
 init_user(gss_ctx_id_t *ctx,
-	  const char *service,
-	  const char *hostname,
-	  gss_buffer_desc *input_token,
-	  gss_buffer_desc *output_token)
+          const char *service,
+          const char *hostname,
+          gss_buffer_desc *input_token,
+          gss_buffer_desc *output_token)
 {
     OM_uint32 maj_stat, min_stat;
     gss_buffer_desc name_token;
@@ -271,21 +269,21 @@ init_user(gss_ctx_id_t *ctx,
                  "Error importing name `%s@%s':\n", service, hostname);
 
     maj_stat =
-	gss_init_sec_context(&min_stat,
-			     GSS_C_NO_CREDENTIAL,
-			     ctx,
-			     server,
-			     mech_oid,
-			     GSS_C_DELEG_FLAG,
-			     0,
-			     GSS_C_NO_CHANNEL_BINDINGS,
-			     input_token,
-			     NULL,
-			     output_token,
-			     NULL,
-			     NULL);
+        gss_init_sec_context(&min_stat,
+                             GSS_C_NO_CREDENTIAL,
+                             ctx,
+                             server,
+                             mech_oid,
+                             GSS_C_DELEG_FLAG,
+                             0,
+                             GSS_C_NO_CHANNEL_BINDINGS,
+                             input_token,
+                             NULL,
+                             output_token,
+                             NULL,
+                             NULL);
     if (GSS_ERROR(maj_stat))
-	gss_err (1, min_stat, "gss_init_sec_context");
+        gss_err (1, min_stat, "gss_init_sec_context");
 
     return maj_stat;
 }
@@ -347,7 +345,7 @@ void test(int argc, char *argv[])
     memset(&name, 0, sizeof(name));
 
     if (argc != 2)
-	return;
+        return;
 
     hostname = argv[1];
 
@@ -356,12 +354,12 @@ void test(int argc, char *argv[])
 /*     fwrite(output_token.value, output_token.length, 1, stdout); */
 
     if (accept_user(&ctx, &output_token, &input_token, &name, &ccname) == OK) {
-	fprintf(stderr, "User authenticated\r\n");
+        fprintf(stderr, "User authenticated\r\n");
     }
 }
 
 
-/* 
+/*
    Erlang port functions
 */
 
@@ -397,53 +395,53 @@ static int accept_sec_context(char *buf, int index, ei_x_buff *presult)
     EI(decode_gssapi_binary(buf, &index, &in));
 
     if (idx < 0) {
-	idx = session_find_free();
-	if (idx < 0) ENCODE_ERROR("no_mem");
-	g_sessions[idx] = GSS_C_NO_CONTEXT;
+        idx = session_find_free();
+        if (idx < 0) ENCODE_ERROR("no_mem");
+        g_sessions[idx] = GSS_C_NO_CONTEXT;
     } else {
-	if (idx < 0 || idx >= MAX_SESSIONS || !g_sessions[idx])
-	    ENCODE_ERROR("bad_instance");
+        if (idx < 0 || idx >= MAX_SESSIONS || !g_sessions[idx])
+            ENCODE_ERROR("bad_instance");
     }
 
     res = accept_user(&g_sessions[idx], &in, &out, &name, &ccname);
 
     if (!GSS_ERROR(res)) {
-	if (res & GSS_S_CONTINUE_NEEDED) {
-	    EI(ei_x_encode_atom(&result, "needsmore") ||
-	       ei_x_encode_tuple_header(&result, 2) ||
-	       ei_x_encode_long(&result, idx) ||
-	       ei_x_encode_binary(&result, out.value, out.length)
-		);
-	} else {
-	    const char *ret_ccname = ccname;
-	    if (!ret_ccname)
-		ret_ccname = "";
+        if (res & GSS_S_CONTINUE_NEEDED) {
+            EI(ei_x_encode_atom(&result, "needsmore") ||
+               ei_x_encode_tuple_header(&result, 2) ||
+               ei_x_encode_long(&result, idx) ||
+               ei_x_encode_binary(&result, out.value, out.length)
+                );
+        } else {
+            const char *ret_ccname = ccname;
+            if (!ret_ccname)
+                ret_ccname = "";
 
-	    EI(ei_x_encode_atom(&result, "ok") ||
-	       ei_x_encode_tuple_header(&result, 4) ||
-	       ei_x_encode_long(&result, idx) ||
-	       ei_x_encode_string_len(&result, name.value, name.length) ||
-	       ei_x_encode_string(&result, ret_ccname) ||
-	       ei_x_encode_binary(&result, out.value, out.length)
-		);
+            EI(ei_x_encode_atom(&result, "ok") ||
+               ei_x_encode_tuple_header(&result, 4) ||
+               ei_x_encode_long(&result, idx) ||
+               ei_x_encode_string_len(&result, name.value, name.length) ||
+               ei_x_encode_string(&result, ret_ccname) ||
+               ei_x_encode_binary(&result, out.value, out.length)
+                );
 
-	}
+        }
     } else {
-	EI(ei_x_encode_atom(&result, "error") || ei_x_encode_atom(&result, "unauthorized"));
+        EI(ei_x_encode_atom(&result, "error") || ei_x_encode_atom(&result, "unauthorized"));
     }
 
 error:
     if (ccname)
-	free(ccname);
+        free(ccname);
 
     if (in.value)
-	gss_release_buffer(&min_stat, &in);
+        gss_release_buffer(&min_stat, &in);
 
     if (out.value)
-	gss_release_buffer(&min_stat, &out);
+        gss_release_buffer(&min_stat, &out);
 
     if (name.value)
-	gss_release_buffer(&min_stat, &name);
+        gss_release_buffer(&min_stat, &name);
 
     *presult = result;
     return 0;
@@ -466,7 +464,7 @@ static int init_sec_context(char *buf, int index, ei_x_buff *presult)
     char *hostname = NULL;
     long idx;
     OM_uint32 min_stat;
-	
+        
     memset(&in, 0, sizeof(in));
     memset(&out, 0, sizeof(out));
 
@@ -482,40 +480,40 @@ static int init_sec_context(char *buf, int index, ei_x_buff *presult)
     EI(decode_gssapi_binary(buf, &index, &in));
 
     if (idx < 0) {
-	idx = session_find_free();
-	if (idx < 0) ENCODE_ERROR("no_mem");
-	g_sessions[idx] = GSS_C_NO_CONTEXT;
+        idx = session_find_free();
+        if (idx < 0) ENCODE_ERROR("no_mem");
+        g_sessions[idx] = GSS_C_NO_CONTEXT;
     } else {
-	if (idx < 0 || idx >= MAX_SESSIONS || !g_sessions[idx])
-	    ENCODE_ERROR("bad_instance");
+        if (idx < 0 || idx >= MAX_SESSIONS || !g_sessions[idx])
+            ENCODE_ERROR("bad_instance");
     }
 
     res = init_user(&g_sessions[idx], service, hostname, &in, &out);
 
     if (!GSS_ERROR(res)) {
-	const char *status = (res & GSS_S_CONTINUE_NEEDED)?"needsmore":"ok";
-	EI(ei_x_encode_atom(&result, status) ||
-	   ei_x_encode_tuple_header(&result, 2) ||
-	   ei_x_encode_long(&result, idx) ||
-	   ei_x_encode_binary(&result, out.value, out.length)
-	    );
+        const char *status = (res & GSS_S_CONTINUE_NEEDED)?"needsmore":"ok";
+        EI(ei_x_encode_atom(&result, status) ||
+           ei_x_encode_tuple_header(&result, 2) ||
+           ei_x_encode_long(&result, idx) ||
+           ei_x_encode_binary(&result, out.value, out.length)
+            );
 
     } else {
-	EI(ei_x_encode_atom(&result, "error") || ei_x_encode_long(&result, res));
+        EI(ei_x_encode_atom(&result, "error") || ei_x_encode_long(&result, res));
     }
 
 error:
     if (service)
-	free(service);
+        free(service);
 
     if (hostname)
-	free(hostname);
+        free(hostname);
 
     if (in.value)
-	gss_release_buffer(&min_stat, &in);
+        gss_release_buffer(&min_stat, &in);
 
     if (out.value)
-	gss_release_buffer(&min_stat, &out);
+        gss_release_buffer(&min_stat, &out);
 
     *presult = result;
     return 0;
@@ -531,26 +529,26 @@ static int delete_sec_context(char *buf, int index, ei_x_buff *presult)
 
     long idx;
     OM_uint32 maj_stat, min_stat;
-	
+        
     EI(ei_decode_long(buf, &index, &idx));
 
     if (idx < 0 || idx >= MAX_SESSIONS || !g_sessions[idx] ||
-	g_sessions[idx] == GSS_C_NO_CONTEXT)
-	ENCODE_ERROR("bad_instance");
+        g_sessions[idx] == GSS_C_NO_CONTEXT)
+        ENCODE_ERROR("bad_instance");
 
     maj_stat = gss_delete_sec_context(&min_stat, &g_sessions[idx],
-				      GSS_C_NO_BUFFER);
+                                      GSS_C_NO_BUFFER);
 
     g_sessions[idx] = NULL;
 
     if (!GSS_ERROR(maj_stat)) {
-	EI(ei_x_encode_atom(&result, "ok") ||
-	   ei_x_encode_atom(&result, "done")
-	    );
+        EI(ei_x_encode_atom(&result, "ok") ||
+           ei_x_encode_atom(&result, "done")
+            );
     } else {
-	fprintf(stderr, "gss_delete_sec_context: %08x", maj_stat);
-	gss_print_errors(min_stat);
-	EI(ei_x_encode_atom(&result, "error") || ei_x_encode_long(&result, maj_stat));
+        fprintf(stderr, "gss_delete_sec_context: %08x", maj_stat);
+        gss_print_errors(min_stat);
+        EI(ei_x_encode_atom(&result, "error") || ei_x_encode_long(&result, maj_stat));
     }
 
 error:
@@ -574,7 +572,7 @@ static int wrap(char *buf, int index, ei_x_buff *presult)
     int conf_req;
     int conf_state;
     OM_uint32 maj_stat, min_stat;
-	
+        
     memset(&in, 0, sizeof(in));
     memset(&out, 0, sizeof(out));
 
@@ -589,39 +587,39 @@ static int wrap(char *buf, int index, ei_x_buff *presult)
     EI(decode_gssapi_binary(buf, &index, &in));
 
     if (idx < 0 || idx >= MAX_SESSIONS || !g_sessions[idx])
-	ENCODE_ERROR("bad_instance");
+        ENCODE_ERROR("bad_instance");
 
     if (!strcmp(conf_str, "false")) {
-	conf_req = 0;
+        conf_req = 0;
     } else if (!strcmp(conf_str, "true")) {
-	conf_req = 1;
+        conf_req = 1;
     } else {
-	ENCODE_ERROR("bad_parameter");
+        ENCODE_ERROR("bad_parameter");
     }
 
     maj_stat = gss_wrap(&min_stat, g_sessions[idx],
-			conf_req, GSS_C_QOP_DEFAULT, &in,
-			&conf_state, &out);
+                        conf_req, GSS_C_QOP_DEFAULT, &in,
+                        &conf_state, &out);
 
     if (!GSS_ERROR(maj_stat)) {
-	const char *conf_str = conf_state ? "true":"false";
+        const char *conf_str = conf_state ? "true":"false";
 
-	EI(ei_x_encode_atom(&result, "ok") ||
-	   ei_x_encode_tuple_header(&result, 2) ||
-	   ei_x_encode_atom(&result, conf_str) ||
-	   ei_x_encode_binary(&result, out.value, out.length)
-	    );
+        EI(ei_x_encode_atom(&result, "ok") ||
+           ei_x_encode_tuple_header(&result, 2) ||
+           ei_x_encode_atom(&result, conf_str) ||
+           ei_x_encode_binary(&result, out.value, out.length)
+            );
 
     } else {
-	EI(ei_x_encode_atom(&result, "error") || ei_x_encode_long(&result, maj_stat));
+        EI(ei_x_encode_atom(&result, "error") || ei_x_encode_long(&result, maj_stat));
     }
 
 error:
     if (in.value)
-	gss_release_buffer(&min_stat, &in);
+        gss_release_buffer(&min_stat, &in);
 
     if (out.value)
-	gss_release_buffer(&min_stat, &out);
+        gss_release_buffer(&min_stat, &out);
 
     *presult = result;
     return 0;
@@ -642,7 +640,7 @@ static int unwrap(char *buf, int index, ei_x_buff *presult)
     int conf_state;
     OM_uint32 maj_stat, min_stat;
     gss_qop_t qop;
-	
+        
     memset(&in, 0, sizeof(in));
     memset(&out, 0, sizeof(out));
 
@@ -655,30 +653,30 @@ static int unwrap(char *buf, int index, ei_x_buff *presult)
     EI(decode_gssapi_binary(buf, &index, &in));
 
     if (idx < 0 || idx >= MAX_SESSIONS || !g_sessions[idx])
-	ENCODE_ERROR("bad_instance");
+        ENCODE_ERROR("bad_instance");
 
     maj_stat = gss_unwrap(&min_stat, g_sessions[idx],
-			  &in, &out, &conf_state, &qop);
+                          &in, &out, &conf_state, &qop);
 
     if (!GSS_ERROR(maj_stat)) {
-	const char *conf_str = conf_state ? "true":"false";
+        const char *conf_str = conf_state ? "true":"false";
 
-	EI(ei_x_encode_atom(&result, "ok") ||
-	   ei_x_encode_tuple_header(&result, 2) ||
-	   ei_x_encode_atom(&result, conf_str) ||
-	   ei_x_encode_binary(&result, out.value, out.length)
-	    );
+        EI(ei_x_encode_atom(&result, "ok") ||
+           ei_x_encode_tuple_header(&result, 2) ||
+           ei_x_encode_atom(&result, conf_str) ||
+           ei_x_encode_binary(&result, out.value, out.length)
+            );
 
     } else {
-	EI(ei_x_encode_atom(&result, "error") || ei_x_encode_long(&result, maj_stat));
+        EI(ei_x_encode_atom(&result, "error") || ei_x_encode_long(&result, maj_stat));
     }
 
 error:
     if (in.value)
-	gss_release_buffer(&min_stat, &in);
+        gss_release_buffer(&min_stat, &in);
 
     if (out.value)
-	gss_release_buffer(&min_stat, &out);
+        gss_release_buffer(&min_stat, &out);
 
     *presult = result;
     return 0;
@@ -700,9 +698,9 @@ port_func lookup_func(const char *name)
     int size = sizeof(g_entries)/sizeof(g_entries[0]);
 
     for (i = 0; i < size; i++) {
-	if (strcmp(name, g_entries[i].name) == 0) {
-	    return g_entries[i].func;
-	}
+        if (strcmp(name, g_entries[i].name) == 0) {
+            return g_entries[i].func;
+        }
     }
 
     return NULL;
@@ -717,49 +715,49 @@ int main(int argc, char *argv[])
     int       size = BUF_SIZE;
 
     if (argc > 1) {
-	test(argc, argv);
-	return 0;
+        test(argc, argv);
+        return 0;
     }
 
     fprintf(stderr, "gssapi started\r\n");
 
     if ((buf = malloc(size)) == NULL)
-	return -1;
-    
+        return -1;
+
     while ( (buf = read_cmd(buf, &size)) ) {
-	int res = 0;
-	int index = 0;
-	int version, arity;
-	char command[MAXATOMLEN];
-	ei_x_buff result;
-	port_func func;
+        int res = 0;
+        int index = 0;
+        int version, arity;
+        char command[MAXATOMLEN];
+        ei_x_buff result;
+        port_func func;
 
-	/* Ensure that we are receiving the binary term by reading and 
-	 * stripping the version byte */
-	EI(ei_decode_version(buf, &index, &version));
-    
-	/* Our marshalling spec is that we are expecting a tuple {Command, Arg1} */
-	EI(ei_decode_tuple_header(buf, &index, &arity));
-    
-	EI(arity != 2);
-    
-	EI(ei_decode_atom(buf, &index, command));
+        /* Ensure that we are receiving the binary term by reading and 
+         * stripping the version byte */
+        EI(ei_decode_version(buf, &index, &version));
 
-	/* Prepare the output buffer that will hold {ok, Result} or {error, Reason} */
-	EI(ei_x_new_with_version(&result) || ei_x_encode_tuple_header(&result, 2));
-    
-/* 	fprintf(stderr, "command: %s\r\n", command); */
-	func = lookup_func(command);
+        /* Our marshalling spec is that we are expecting a tuple {Command, Arg1} */
+        EI(ei_decode_tuple_header(buf, &index, &arity));
 
-	if (func) {
-	    res = func(buf, index, &result);
-	} else {
-	    EI(ei_x_encode_atom(&result, "error") || ei_x_encode_atom(&result, "unsupported_command"));
-	}
+        EI(arity != 2);
 
-	write_cmd(&result);
+        EI(ei_decode_atom(buf, &index, command));
 
-	ei_x_free(&result);
+        /* Prepare the output buffer that will hold {ok, Result} or {error, Reason} */
+        EI(ei_x_new_with_version(&result) || ei_x_encode_tuple_header(&result, 2));
+
+/*         fprintf(stderr, "command: %s\r\n", command); */
+        func = lookup_func(command);
+
+        if (func) {
+            res = func(buf, index, &result);
+        } else {
+            EI(ei_x_encode_atom(&result, "error") || ei_x_encode_atom(&result, "unsupported_command"));
+        }
+
+        write_cmd(&result);
+
+        ei_x_free(&result);
     }
 
 /* error: */
