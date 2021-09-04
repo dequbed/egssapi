@@ -2,9 +2,8 @@
  [{description, "GSSAPI"},
   {vsn,"0.1.0"},
   {modules, [
-	     'SPNEGOASNOneSpec',
 	     egssapi,
-	     spnego
+       egssapi_internal
 	    ]},
   {registered, []},
 %  {mod, {gssapi_app, []}},
