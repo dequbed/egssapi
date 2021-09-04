@@ -2,10 +2,11 @@
 -module(egssapi_nif).
 
 -export(
-   [ accept_sec_context/1
-   , init_sec_context/1
-   , acquire_cred/4
-]).
+    [ accept_sec_context/3
+    , acquire_cred/2
+    , empty_context/0
+    , show_error/1
+    ]).
 -on_load(init/0).
 
 init() ->
@@ -15,12 +16,25 @@ init() ->
   % the NIF lib.
   ok = erlang:load_nif("./priv/egssapi_nif", 0).
 
-accept_sec_context(_Token) ->
+-record(gss_accept_sec_context_output, {
+          major :: integer(),
+          minor :: integer()
+}).
+
+%-spec accept_sec_context(egssapi_cred_handle, egssapi_ctx_handle, binary) -> gss_accept_sec_context_output.
+accept_sec_context(_Creds, _Context, _Token) ->
   erlang:exit(nif_library_not_loaded).
 
-init_sec_context(_Token) ->
+-record(gss_acquire_cred_output, {
+          cred :: egssapi_cred_handle,
+          lifetime :: integer()
+}).
+-spec acquire_cred(integer(), integer()) -> gss_acquire_cred_output.
+acquire_cred(_Lifetime, _Usage) ->
   erlang:exit(nif_library_not_loaded).
 
-acquire_cred(_Name, _Lifetime, _Mechs, _Usage) ->
+empty_context() ->
   erlang:exit(nif_library_not_loaded).
 
+show_error(_Error) ->
+  erlang:exit(nif_library_not_loaded).

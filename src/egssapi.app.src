@@ -2,8 +2,7 @@
  [{description, "GSSAPI"},
   {vsn,"0.1.0"},
   {modules, [
-	     egssapi,
-       egssapi_internal
+       egssapi_nif
 	    ]},
   {registered, []},
 %  {mod, {gssapi_app, []}},
