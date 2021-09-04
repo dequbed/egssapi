@@ -1,0 +1,14 @@
+{application, egssapi,
+ [{description, "GSSAPI"},
+  {vsn,"0.1.0"},
+  {modules, [
+	     egssapi,
+       egssapi_internal
+	    ]},
+  {registered, []},
+%  {mod, {gssapi_app, []}},
+  {env, []},
+  {applications, [
+		  kernel,
+		  stdlib
+		  ]}]}.
