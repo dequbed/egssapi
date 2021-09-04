@@ -21,3 +21,4 @@ priv/
 rebar.lock
 compile_commands.json
 .idea/
+*.orig
