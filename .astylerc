@@ -12,3 +12,9 @@
 -H
 # Attach pointer to type. char *x -> char* x
 -k1
+
+# Indent with 4 spaces
+-s4
+
+# Indent switch 'case:' headers
+-S
