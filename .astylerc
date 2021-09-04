@@ -1,0 +1,14 @@
+# Use one-true-brace-style. Linux braces with braced single-statement blocks
+--style=1tbs
+# Attach braces to single-statement blocks (e.g. if/else)
+-j
+# Convert tabs to spaces
+-c
+# Indent C++ style // comments
+-Y
+# Pad around if/else blocks
+-f
+# Pad header if( -> if (
+-H
+# Attach pointer to type. char *x -> char* x
+-k1
