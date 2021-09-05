@@ -1,5 +1,5 @@
 {application, egssapi,
- [{description, "GSSAPI"},
+ [{description, "Bindings to the system GSSAPI library"},
   {vsn,"0.1.0"},
   {modules, [
        egssapi_nif
@@ -10,4 +10,6 @@
   {applications, [
 		  kernel,
 		  stdlib
-		  ]}]}.
+		  ]},
+  {licenses, ["Apache-2.0"]},
+  {links, [{"GitHub", "https://github.com/dequbed/egssapi"}]}]}.
