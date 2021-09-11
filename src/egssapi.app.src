@@ -1,15 +1,16 @@
 {application, egssapi,
- [{description, "Bindings to the system GSSAPI library"},
-  {vsn,"0.1.0"},
-  {modules, [
-       egssapi_nif
-	    ]},
-  {registered, []},
-%  {mod, {gssapi_app, []}},
-  {env, []},
-  {applications, [
-		  kernel,
-		  stdlib
-		  ]},
-  {licenses, ["Apache-2.0"]},
-  {links, [{"GitHub", "https://github.com/dequbed/egssapi"}]}]}.
+  [ {description, "Bindings to the system GSSAPI library"}
+  , {vsn,"0.2.0"}
+  , {modules, 
+    [ egssapi
+    , egssapi_nif 
+    ]}
+  , {registered, []}
+  , {env, []}
+  , {applications, 
+    [ kernel
+    , stdlib
+    ]}
+  , {exclude_files, ["c_src/*.d", "rebar.lock"]}
+  , {licenses, ["Apache-2.0"]}
+  , {links, [{"GitHub", "https://github.com/dequbed/egssapi"}]}]}.
