@@ -2,7 +2,7 @@
 -type credentials() :: egssapi_cred_handle.
 
 -type gss_retcode() :: { Major :: integer(), Minor :: integer() }.
--type gss_string() :: String :: binary().
+-type gss_string() :: binary().
 -type gss_error() :: { gss_retcode(), Status_Context :: integer(), Status_Major :: gss_string(), Status_Minor :: gss_string() }.
 
 -record(credentials_usage, {

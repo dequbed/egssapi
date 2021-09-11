@@ -19,8 +19,8 @@
     ]).
 
 -type accept_context_ret()
-    :: {ok, context(), binary() }
-     | {error, gss_error()}.
+    :: {ok, Context :: context(), Token :: binary() }
+     | {error, Error :: gss_error()}.
 
 -spec accept_context(credentials(), binary()) -> accept_context_ret().
 %% @doc Accept and create an security context.

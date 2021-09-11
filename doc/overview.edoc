@@ -1,0 +1,7 @@
+** this is the overview.doc file for the application 'frob' **
+
+@author Nadja Reitzenstein <me@dequbed.space>
+@copyright 2021 Nadja Reitzenstein
+@version 0.2.0
+@title Erlang GSSAPI
+@doc `egssapi' is a high level binding to the system GSSAPI library
