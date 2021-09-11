@@ -6,7 +6,6 @@
 
 #include <gssapi.h>
 
-#include "egssapi_atoms.h"
 #include "egssapi_resources.h"
 
 typedef struct {
@@ -43,7 +42,10 @@ egssapi_load (ErlNifEnv* caller_env, egssapi_privdata_t* priv_data_ptr, ERL_NIF_
 static ERL_NIF_TERM
 buffer_to_str(ErlNifEnv* env, gss_buffer_desc buffer)
 {
-    return enif_make_string_len(env, (char*)buffer.value, buffer.length, ERL_NIF_LATIN1);
+    ERL_NIF_TERM string;
+    void* string_ptr = enif_make_new_binary(env, buffer.length, &string);
+    memcpy(string_ptr, buffer.value, buffer.length);
+    return string;
 }
 
 static ERL_NIF_TERM
@@ -62,6 +64,12 @@ build_retcode(ErlNifEnv* env, uint32_t major, uint32_t minor)
 }
 
 static ERL_NIF_TERM
+egssapi_raise_exception(ErlNifEnv* env, uint32_t major, uint32_t minor)
+{
+    return enif_raise_exception(env, build_retcode(env, major, minor));
+}
+
+static ERL_NIF_TERM
 build_display_err(ErlNifEnv* env, uint32_t major, uint32_t minor, gss_OID mech)
 {
     uint32_t maj, min, context;
@@ -75,11 +83,16 @@ build_display_err(ErlNifEnv* env, uint32_t major, uint32_t minor, gss_OID mech)
         return egssapi_raise_exception(env, maj, min);
     }
 
-    ERL_NIF_TERM erl_major = enif_make_int(env, major);
-    ERL_NIF_TERM erl_minor = enif_make_int(env, minor);
     ERL_NIF_TERM erl_context = enif_make_int(env, context);
-    ERL_NIF_TERM erl_major_str = buffer_to_string(bufmaj);
-    ERL_NIF_TERM erl_minor_str = buffer_to_string(bufmin);
+    ERL_NIF_TERM erl_major_str = buffer_to_str(env, bufmaj);
+    ERL_NIF_TERM erl_minor_str = buffer_to_str(env, bufmin);
+
+    if ((maj = gss_release_buffer(&min, &bufmaj)) != GSS_S_COMPLETE) {
+        return egssapi_raise_exception(env, maj, min);
+    }
+    if ((maj = gss_release_buffer(&min, &bufmin)) != GSS_S_COMPLETE) {
+        return egssapi_raise_exception(env, maj, min);
+    }
 
     return enif_make_tuple4(
                env,
@@ -174,7 +187,7 @@ egssapi_accept_sec_context(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
     gss_release_buffer(NULL, &output);
 
-    return erl_output;
+    return enif_make_tuple2(env, erl_output, argv[1]);
 }
 
 static ERL_NIF_TERM
