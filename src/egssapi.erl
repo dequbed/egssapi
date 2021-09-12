@@ -6,6 +6,8 @@
 -export(
     [ accept_context/2
     , accept_context/3
+    , inquire_context/1
+
     , acquire_credentials/2
     , initiate_and_accept/0
     , initiate_only/0
@@ -15,7 +17,6 @@
 -export_type(
     [ context/0
     , credentials/0
-    , credentials_usage/0
     , gss_retcode/0
     , gss_string/0
     , gss_error/0
@@ -46,7 +47,26 @@ accept_context(Credentials, Context, Token) ->
         error:Error -> {error, egssapi_nif:show_error(Error) }
     end.
 
--spec acquire_credentials(integer(), credentials_usage())
+-spec inquire_context(context()) 
+    -> {ok, 
+        Source :: name(), 
+        Target :: name(), 
+        Lifetime :: integer(), 
+        Flags :: contextflags(),
+        LocallyInitiated :: boolean(), 
+        Open :: boolean()}
+    |  {error, gss_error() }.
+inquire_context(Context) ->
+    try egssapi_nif:inquire_context(Context)
+    of
+        { SourceName, TargetName, Lifetime, Flags, LocallyInitiated, Open } ->
+            {ok, SourceName, TargetName, Lifetime, Flags, LocallyInitiated, Open }
+    catch
+        error:Error -> {error, egssapi_nif:show_error(Error) }
+    end.
+
+
+-spec acquire_credentials(integer(), credentials_usage)
     -> {ok, credentials(), integer()}
      | {error, gss_error()}.
 %% @doc Acquire credentials for future GSSAPI operations.
@@ -68,9 +88,6 @@ acquire_credentials(RequestedLifetime, Usage) ->
         error:Error -> {error, egssapi_nif:show_error(Error)}
     end.
 
--spec initiate_and_accept() -> credentials_usage().
 initiate_and_accept() -> ?CREDS_INITIATE_AND_ACCEPT.
--spec initiate_only() -> credentials_usage().
 initiate_only() -> ?CREDS_INITIATE_ONLY.
--spec accept_only() -> credentials_usage().
-accept_only() -> #credentials_usage.accept_only.
+accept_only() -> ?CREDS_ACCEPT_ONLY.

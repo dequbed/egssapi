@@ -1,10 +1,13 @@
 -module(egssapi_nif).
 
+-include("src/egssapi.hrl").
+
 -export(
     [ accept_sec_context/3
     , acquire_cred/2
     , empty_context/0
     , show_error/1
+    , inquire_context/1
     ]).
 
 -on_load(init/0).
@@ -17,19 +20,30 @@ init() ->
   ok = erlang:load_nif("./priv/egssapi_nif", 0).
 
 
--spec accept_sec_context(egssapi_cred_handle, egssapi_ctx_handle, Token :: binary()) 
-    -> { egssapi_ctx_handle, Token :: binary() }.
+-spec accept_sec_context(credentials(), context(), Token :: binary())
+    -> { Context :: context(), Token :: binary() }.
 accept_sec_context(Creds, Context, Token) ->
   erlang:nif_error(nif_library_not_loaded, [Creds, Context, Token]).
 
--spec acquire_cred(integer(), integer()) -> { egssapi_cred_handle , integer() }.
+-spec acquire_cred(integer(), integer()) -> { credentials(), integer() }.
 acquire_cred(Lifetime, Usage) ->
   erlang:nif_error(nif_library_not_loaded, [Lifetime, Usage]).
 
--spec empty_context() -> egssapi_ctx_handle.
+-spec empty_context() -> context().
 empty_context() ->
   erlang:nif_error(nif_library_not_loaded).
 
--spec show_error(egssapi:gss_retcode()) -> egssapi:gss_error().
+-spec show_error(gss_retcode()) -> gss_error().
 show_error(Error) ->
   erlang:nif_error(nif_library_not_loaded, [Error]).
+
+-spec inquire_context(context())
+    -> { SourceName :: name()
+       , TargetName :: name()
+       , Lifetime :: integer()
+       , Flags :: contextflags()
+       , LocallyInitiated :: boolean()
+       , Open :: boolean()
+       }.
+inquire_context(Context) ->
+  erlang:nif_error(nif_library_not_loaded, [Context]).
