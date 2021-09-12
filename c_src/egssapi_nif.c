@@ -39,7 +39,7 @@ oid_to_erl(ErlNifEnv* env, gss_OID oid)
         return build_retcode(env, major, minor);
     }
 
-    return buffer_to_str(env, buffer);
+    return buffer_into_binary(env, buffer);
 }
 
 uint32_t
@@ -79,6 +79,7 @@ static ErlNifFunc nif_funcs[] = {
     {"acquire_cred", 2, egssapi_acquire_cred, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"empty_context", 0, egssapi_empty_context},
     {"show_error", 1, egssapi_show_error},
+    {"inquire_context", 1, egssapi_inquire_context},
 };
 
 typedef int (*load)(ErlNifEnv* caller_env, void** priv_data, ERL_NIF_TERM load_info) ;

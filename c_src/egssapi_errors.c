@@ -22,8 +22,8 @@ build_display_err(ErlNifEnv* env, uint32_t major, uint32_t minor, gss_OID mech)
     }
 
     ERL_NIF_TERM erl_context = enif_make_int(env, context);
-    ERL_NIF_TERM erl_major_str = buffer_to_str(env, bufmaj);
-    ERL_NIF_TERM erl_minor_str = buffer_to_str(env, bufmin);
+    ERL_NIF_TERM erl_major_str = buffer_into_binary(env, bufmaj);
+    ERL_NIF_TERM erl_minor_str = buffer_into_binary(env, bufmin);
 
     if ((maj = gss_release_buffer(&min, &bufmaj)) != GSS_S_COMPLETE) {
         return egssapi_raise_exception(env, maj, min);
@@ -67,4 +67,3 @@ egssapi_raise_is_unloaded(ErlNifEnv* env)
 {
     return enif_raise_exception(env, enif_make_atom(env, "egssapi_is_unloaded"));
 }
-
