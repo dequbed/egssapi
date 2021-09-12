@@ -1,13 +1,8 @@
+#include "util.h"
 #include "egssapi_errors.h"
 
-void egssapi_raise_exception(ErlNifEnv* env, int major, int minor)
+ERL_NIF_TERM
+egssapi_raise_exception(ErlNifEnv* env, uint32_t major, uint32_t minor)
 {
-    enif_raise_exception(
-        env,
-        enif_make_tuple2(
-            env,
-            enif_make_int(env, major),
-            enif_make_int(env, minor)
-        )
-    );
+    return enif_raise_exception(env, build_retcode(env, major, minor));
 }
