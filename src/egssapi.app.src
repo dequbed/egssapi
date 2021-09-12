@@ -11,6 +11,6 @@
     [ kernel
     , stdlib
     ]}
-  , {exclude_files, ["c_src/*.d", "rebar.lock"]}
+  , {exclude_files, ["c_src/*.d", "c_src/*.o", "c_src/*.so", "rebar.lock"]}
   , {licenses, ["Apache-2.0"]}
   , {links, [{"GitHub", "https://github.com/dequbed/egssapi"}]}]}.
