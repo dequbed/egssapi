@@ -17,8 +17,8 @@ init() ->
   ok = erlang:load_nif("./priv/egssapi_nif", 0).
 
 
--spec accept_sec_context(egssapi_cred_handle, egssapi_ctx_handle, binary()) 
-    -> { egssapi_ctx_handle, binary() }.
+-spec accept_sec_context(egssapi_cred_handle, egssapi_ctx_handle, Token :: binary()) 
+    -> { egssapi_ctx_handle, Token :: binary() }.
 accept_sec_context(Creds, Context, Token) ->
   erlang:nif_error(nif_library_not_loaded, [Creds, Context, Token]).
 
