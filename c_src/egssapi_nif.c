@@ -6,6 +6,8 @@
 
 #include <gssapi.h>
 
+#include "util.h"
+#include "egssapi_errors.h"
 #include "egssapi_resources.h"
 
 typedef struct {
@@ -40,33 +42,9 @@ egssapi_load (ErlNifEnv* caller_env, egssapi_privdata_t* priv_data_ptr, ERL_NIF_
 }
 
 static ERL_NIF_TERM
-buffer_to_str(ErlNifEnv* env, gss_buffer_desc buffer)
-{
-    ERL_NIF_TERM string;
-    void* string_ptr = enif_make_new_binary(env, buffer.length, &string);
-    memcpy(string_ptr, buffer.value, buffer.length);
-    return string;
-}
-
-static ERL_NIF_TERM
 egssapi_raise_is_unloaded(ErlNifEnv* env)
 {
     return enif_raise_exception(env, enif_make_atom(env, "egssapi_is_unloaded"));
-}
-
-static ERL_NIF_TERM
-build_retcode(ErlNifEnv* env, uint32_t major, uint32_t minor)
-{
-    ERL_NIF_TERM erl_major = enif_make_int(env, major);
-    ERL_NIF_TERM erl_minor = enif_make_int(env, minor);
-
-    return enif_make_tuple2(env, erl_major, erl_minor);
-}
-
-static ERL_NIF_TERM
-egssapi_raise_exception(ErlNifEnv* env, uint32_t major, uint32_t minor)
-{
-    return enif_raise_exception(env, build_retcode(env, major, minor));
 }
 
 static ERL_NIF_TERM
@@ -146,7 +124,7 @@ egssapi_accept_sec_context(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
         return enif_make_badarg(env);
     }
 
-    if (!enif_inspect_binary(env, argv[2], &erl_token)) {
+    if (!enif_inspect_binary(env, argv[3], &erl_token)) {
         return enif_make_badarg(env);
     }
 
@@ -261,7 +239,7 @@ oid_to_erl(ErlNifEnv* env, gss_OID oid)
         return build_retcode(env, major, minor);
     }
 
-    return buffer_to_string(env, buffer);
+    return buffer_to_str(env, buffer);
 }
 
 uint32_t

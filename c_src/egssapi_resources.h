@@ -16,7 +16,7 @@ typedef struct {
     gss_ctx_id_t inner;
 } egssapi_gss_ctx_handle;
 
-ErlNifResourceType* load_resource_gss_name(ErlNifEnv* caller_env);
+ErlNifResourceType* load_gss_name(ErlNifEnv* caller_env);
 ErlNifResourceType* load_cred_handle(ErlNifEnv* caller_env);
 ErlNifResourceType* load_ctx_handle(ErlNifEnv* caller_env);
 
