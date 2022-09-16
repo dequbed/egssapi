@@ -16,3 +16,4 @@ compile_commands.json
 
 doc/
 !doc/overview.edoc
+cmake-build-*/

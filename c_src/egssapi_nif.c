@@ -74,6 +74,7 @@ erl_to_oid(uint32_t* minor, ErlNifEnv* env, ERL_NIF_TERM str, gss_OID* out)
 
 // Almost all GSSAPI calls have to be treated as dirty nifs that are IO bound
 // since they may open files, do network calls and so on.
+/// foo!
 static ErlNifFunc nif_funcs[] = {
     {"accept_sec_context", 3, egssapi_accept_sec_context, ERL_NIF_DIRTY_JOB_IO_BOUND},
     {"acquire_cred", 2, egssapi_acquire_cred, ERL_NIF_DIRTY_JOB_IO_BOUND},

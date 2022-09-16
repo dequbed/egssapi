@@ -1,13 +1,14 @@
 -module(egssapi).
 
 %% @headerfile "egssapi.hrl"
--include("src/egssapi.hrl").
+-include("egssapi.hrl").
 
 -export(
     [ accept_context/2
     , accept_context/3
     , inquire_context/1
 
+    , acquire_credentials/1
     , acquire_credentials/2
     , initiate_and_accept/0
     , initiate_only/0
@@ -66,6 +67,15 @@ inquire_context(Context) ->
     end.
 
 
+-spec acquire_credentials(credentials_usage)
+      -> {ok, credentials(), integer()}
+    | {error, gss_error()}.
+%% @doc Acquire credentials for future GSSAPI operations with default lifetime.
+%%
+%% Maps to gss_acquire_credentials with desired_name and desired_mechs set to NULL
+acquire_credentials(Usage) ->
+  acquire_credentials(0, Usage).
+
 -spec acquire_credentials(integer(), credentials_usage)
     -> {ok, credentials(), integer()}
      | {error, gss_error()}.
@@ -91,3 +101,7 @@ acquire_credentials(RequestedLifetime, Usage) ->
 initiate_and_accept() -> ?CREDS_INITIATE_AND_ACCEPT.
 initiate_only() -> ?CREDS_INITIATE_ONLY.
 accept_only() -> ?CREDS_ACCEPT_ONLY.
+
+-ifdef(TEST).
+
+-endif.

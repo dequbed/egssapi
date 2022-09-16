@@ -17,7 +17,7 @@ init() ->
   % Path is the path to the loadable object minus extension (i.e .so or .dll)
   % LoadInfo can be any term and will be passed as-is to load() & upgrade() in
   % the NIF lib.
-  ok = erlang:load_nif("./priv/egssapi_nif", 0).
+  ok = erlang:load_nif("./target/priv/egssapi_nif", 0).
 
 
 -spec accept_sec_context(credentials(), context(), Token :: binary())
