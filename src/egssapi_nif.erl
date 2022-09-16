@@ -1,6 +1,6 @@
 -module(egssapi_nif).
 
--include("src/egssapi.hrl").
+-include("egssapi.hrl").
 
 -export(
     [ accept_sec_context/3
